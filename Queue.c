@@ -3,25 +3,49 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
+
+
+TargetToMonitor * CreateNode(){
+	TargetToMonitor * NewNode;
+	NewNode = (TargetToMonitor *)malloc(sizeof(TargetToMonitor));
+	if(!NewNode){
+		//TODO: Put an log here
+		return NULL;
+	}
+	return NewNode;
+}
+
+int initData(TargetToMonitor * Node, Info * info){
+	if(!Node)
+		return -1;
+	Node->Next = NULL;
+	Node->Flags = info->Flags;
+	Node->InitHandle = info->InitHandle;
+	strcpy(Node->DictoryName,info->Directory);
+	return 1;
+
+}
 
 TargetToMonitor * AddNewNode(TargetToMonitor * QueueOfTargets, Info * info){
 	TargetToMonitor * AuxTarget;
 	//if(Info)
 		//return NULL;
 	if(!QueueOfTargets){
-		AuxTarget = (TargetToMonitor *) malloc(sizeof(TargetToMonitor));
-		strcpy(AuxTarget->DictoryName, info->Directory);
-		AuxTarget->InitHandle = info->InitHandle;
-		AuxTarget->Next = NULL;
+		AuxTarget = CreateNode();
+		if(!AuxTarget)
+			return NULL;
+		initData(AuxTarget, info);
 		return AuxTarget;
 	}
 	AuxTarget = QueueOfTargets;
 	while(AuxTarget->Next != NULL)
 		AuxTarget = AuxTarget->Next;
-	AuxTarget->Next = (TargetToMonitor *) malloc(sizeof(TargetToMonitor));
+	AuxTarget->Next = CreateNode();
 	AuxTarget = AuxTarget->Next;
-	AuxTarget->Next = NULL;
-	strcpy(AuxTarget->DictoryName, info->Directory);
+	if(!AuxTarget)
+		return NULL;
+	initData(AuxTarget, info);
 	return QueueOfTargets;
 }
 

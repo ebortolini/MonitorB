@@ -4,9 +4,9 @@ CONF_FILE="MonitorB.cfg"
 CheckIfDirExist(){
     if [ -d $1 ] 
     then
-	retureturnedVal=1
+		retureturnedVal=1
     else
-	retureturnedVal=0
+		retureturnedVal=0
     fi
 	return $retureturnedVal
 }
@@ -14,9 +14,9 @@ CheckIfDirExist(){
 CheckIfFileExist(){
     if [ -f $1 ] 
     then
-	retureturnedVal=1
+		retureturnedVal=1
     else
-	retureturnedVal=0
+		retureturnedVal=0
     fi
 	return $retureturnedVal
 }
@@ -47,9 +47,10 @@ do
     CheckIfDirExist "$Monitor"
     if [ "$?" -eq 1 ]
 	then
-	echo "Directory exists"
+		#echo "Directory exists"
+		echo $Monitor >> $CONF_FILE
 	else
-	echo "Not Exists"
+		echo "Directory not exists"
     fi
     #echo "input from user: $Monitor"
     echo "More dirs ?  (y/N) :"

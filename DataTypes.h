@@ -5,6 +5,7 @@
 typedef struct SInfo{
 	char Directory[MAX_STRING_LENGTH];
 	int  InitHandle;
+	int Flags;
 }Info;
 
 /*
@@ -14,6 +15,7 @@ typedef struct STargetToMonitor{
 	char DictoryName[MAX_STRING_LENGTH];
 	int  InitHandle;
 	int WatchHandle;
+	int Flags;
 	struct STargetToMonitor * Next;
 }TargetToMonitor;
 
