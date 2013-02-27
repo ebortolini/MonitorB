@@ -13,9 +13,7 @@
 
 
 int main(){
-	char buffer[EVENT_BUF_LEN];
-	int i;
-	int length;
+	int ret;
 	TargetToMonitor *Target;
 	Info Info;
 	Info.InitHandle = IoNotifyInit();
@@ -23,58 +21,25 @@ int main(){
 	{
 		printf("\n\tError");
 	}
-	Info.Flags = IN_CREATE | IN_DELETE;
+	Info.Flags = IN_CREATE | IN_DELETE | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO;
 	if(Info.InitHandle < 0)
 		return -1;
 	Target = readFile(&Info);
 	printQueueInfo(Target);
-	InstallWatchers(Target);
+	ret = InstallWatchers(Target);
+	if(ret < 0)
+		return -1;
 
-	struct timeval time;
-	int ret;
 	setbuf(stdout, NULL);
 	while(1){
 		setbuf(stdout, NULL);
 		ret = HasEvents(Info.InitHandle, 2);
 		if (ret < 0)
 			return -1;
-		else{
+		else if(ret)
+			ProcessEvent(&Info, Target);
 
-		ProcessEvent(&Info, Target);
-		}
-			/*
-			length = read( Info.InitHandle, buffer, EVENT_BUF_LEN );
-
-				if ( length < 0 ) {
-					perror( "read" );
-				}
-					i =0;
-
-
-						  while ( i < length ) {
-							  struct inotify_event *event = ( struct inotify_event * ) &buffer[ i ];
-							  if ( event->len ) {
-							  if ( event->mask & IN_CREATE ) {
-								if ( event->mask & IN_ISDIR ) {
-								  printf( "New directory %s created.\n", event->name);
-								}
-								else {
-								  printf( "New file %s created.\n", event->name );
-								}
-							  }
-							  else if ( event->mask & IN_DELETE ) {
-								if ( event->mask & IN_ISDIR ) {
-								  printf( "Directory %s deleted.\n", event->name );
-								}
-								else {
-								  printf( "File %s deleted.\n", event->name );
-								}
-							  }
-							}
-							i += EVENT_SIZE + event->len;
-						  }
-		}
-		*/
+		sleep(2);
 	}
 
 

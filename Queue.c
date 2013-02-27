@@ -55,4 +55,5 @@ void printQueueInfo(TargetToMonitor * QueueOfTargets){
 		printf("\n\tDir Name: %s", AuxTarget->DictoryName);
 		AuxTarget = AuxTarget->Next;
 	}
+	printf("\n");
 }
