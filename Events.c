@@ -50,11 +50,13 @@ Event * EnqueueEvent(struct inotify_event* InotifyEvent, Event * QueueOfEvents){
 		Aux = CreateEvent();
 		Aux->InotifyEvent = InotifyEvent;
 		Aux->Next = NULL;
+		Aux->wasUsed = 0;
 		return Aux;
 	}
 	Aux = CreateEvent();
 	Aux->InotifyEvent = InotifyEvent;
 	Aux->Next = NULL;
+	Aux->wasUsed = 0;
 	AddEvent(QueueOfEvents, Aux);
 	//QueueOfEvents->Next = Aux;
 	return QueueOfEvents;
@@ -104,22 +106,29 @@ Event * SearchEventByCookie(Event * Queue,int cookie){
 int WriteEvent(Event * EventToWrite, TargetToMonitor * TargetOfEVent){
 	if(!EventToWrite || !TargetOfEVent)
 		return 1;
-	if (EventToWrite->InotifyEvent->mask & IN_MOVED_TO){
-		return 1;
+	if (EventToWrite->InotifyEvent->mask & IN_MOVED_TO && !EventToWrite->wasUsed){
+		printf("\n\tMoved: %s", EventToWrite->InotifyEvent->name);
 	}
-	if(EventToWrite->InotifyEvent->mask & IN_MOVED_FROM)
+	else if(EventToWrite->InotifyEvent->mask & IN_MOVED_FROM)
 	{
 		Event * Aux = SearchEventByCookie(EventToWrite->Next, EventToWrite->InotifyEvent->cookie);
 		if(!Aux){
-			printf("\n\tCouldn't determine what happen in %s", EventToWrite->InotifyEvent->name);
+			if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
+				printf("\n\tDir %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
+			}
+			else{
+				printf("\n\tFile %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
+			}
 		}
-		if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
+		else if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
 			printf("\n\tDirectory Moved from %s:, To: %s: In: %s",
 					EventToWrite->InotifyEvent->name,Aux->InotifyEvent->name,TargetOfEVent->DictoryName);
+			EventToWrite->wasUsed = 1;
 		}
 		else{
 			printf("\n\tFile Moved from %s, to %s, In: %s",
 					EventToWrite->InotifyEvent->name,Aux->InotifyEvent->name,TargetOfEVent->DictoryName);
+			EventToWrite->wasUsed = 1;
 		}
 	}
 	else if(EventToWrite->InotifyEvent->mask & IN_ATTRIB){

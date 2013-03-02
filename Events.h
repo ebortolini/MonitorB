@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 typedef struct SEvent{
+	unsigned char wasUsed;
 	struct inotify_event * InotifyEvent;
 	struct SEvent * Next;
 }Event;
