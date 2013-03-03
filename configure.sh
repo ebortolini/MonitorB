@@ -24,6 +24,17 @@ CheckIfFileExist(){
 CreateConfigurationFile(){
 	touch $CONF_FILE
 }
+CreateLogDir(){
+	CheckIfDirExist "/var/MonitorB"
+	if [ "$?" -eq  0 ]; then
+		mkdir /var/MonitorB	
+	else
+		CheckIfFileExist "/var/MonitorB/logs"
+		if [ "$?" -eq 1 ];then
+			rm /var/MonitorB/logs
+		fi
+	fi
+}
 
 CheckIfFileExist "MonitorB.cfg"
 if [ "$?" -eq 1 ]
@@ -39,7 +50,7 @@ else
 	echo "Not Exists"
 	CreateConfigurationFile
 fi
-
+CreateLogDir
 while [ $EXIT = "y" ]
 do
     echo "Please, inform a directory/file to monitor: "
@@ -56,3 +67,4 @@ do
     echo "More dirs ?  (y/N) :"
     read EXIT
 done
+

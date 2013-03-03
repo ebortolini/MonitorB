@@ -6,6 +6,7 @@
 #include "Events.h"
 #include <string.h>
 #include <stdio.h>
+#include "LogEvent.h"
 int HasEvents(int Handle, int TimeOut){
 	fd_set rfds;
 	FD_ZERO (&rfds);
@@ -106,65 +107,66 @@ Event * SearchEventByCookie(Event * Queue,int cookie){
 int WriteEvent(Event * EventToWrite, TargetToMonitor * TargetOfEVent){
 	if(!EventToWrite || !TargetOfEVent)
 		return 1;
+	char EventMessage[MAX_EVENT_LOG_STRING];
 	if (EventToWrite->InotifyEvent->mask & IN_MOVED_TO && !EventToWrite->wasUsed){
-		printf("\n\tMoved: %s", EventToWrite->InotifyEvent->name);
+		snprintf(EventMessage,sizeof(EventMessage),"\n\tMoved: %s", EventToWrite->InotifyEvent->name);
 	}
 	else if(EventToWrite->InotifyEvent->mask & IN_MOVED_FROM)
 	{
 		Event * Aux = SearchEventByCookie(EventToWrite->Next, EventToWrite->InotifyEvent->cookie);
 		if(!Aux){
 			if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
-				printf("\n\tDir %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
+				snprintf(EventMessage,sizeof(EventMessage),"\n\tDir %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
 			}
 			else{
-				printf("\n\tFile %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
+				snprintf(EventMessage,sizeof(EventMessage),"\n\tFile %s was moved from: %s", EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
 			}
 		}
 		else if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
-			printf("\n\tDirectory Moved from %s:, To: %s: In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tDirectory Moved from %s:, To: %s: In: %s",
 					EventToWrite->InotifyEvent->name,Aux->InotifyEvent->name,TargetOfEVent->DictoryName);
 			EventToWrite->wasUsed = 1;
 		}
 		else{
-			printf("\n\tFile Moved from %s, to %s, In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tFile Moved from %s, to %s, In: %s",
 					EventToWrite->InotifyEvent->name,Aux->InotifyEvent->name,TargetOfEVent->DictoryName);
 			EventToWrite->wasUsed = 1;
 		}
 	}
 	else if(EventToWrite->InotifyEvent->mask & IN_ATTRIB){
 		if(EventToWrite->InotifyEvent->mask & IN_ISDIR){
-			printf("\n\tChanged permissions of file: %s in Directory: %s", EventToWrite->InotifyEvent->name,
+			snprintf(EventMessage,sizeof(EventMessage),
+					"\n\tChanged permissions of file: %s in Directory: %s", EventToWrite->InotifyEvent->name,
 					TargetOfEVent->DictoryName);
 		}
 
 	}
 	else if(EventToWrite->InotifyEvent->mask & IN_MODIFY){
 		if(EventToWrite->InotifyEvent->mask & IN_ISDIR)
-			printf("\n\tFile Modified: Name: %s, In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tFile Modified: Name: %s, In: %s",
 					EventToWrite->InotifyEvent->name,TargetOfEVent->DictoryName);
 	}
 	else if (EventToWrite->InotifyEvent->mask & IN_CREATE){
 		if(EventToWrite->InotifyEvent->mask & IN_ISDIR)
-			printf("\n\tNew Directory Created. Name: %s , In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tNew Directory Created. Name: %s , In: %s",
 					EventToWrite->InotifyEvent->name,TargetOfEVent->DictoryName);
 		else
-			printf("\n\tNew file created: Name: %s, In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tNew file created: Name: %s, In: %s",
 					EventToWrite->InotifyEvent->name,TargetOfEVent->DictoryName);
 	}
 	else if(EventToWrite->InotifyEvent->mask & IN_DELETE){
 		if(EventToWrite->InotifyEvent->mask & IN_ISDIR)
-			printf("\n\tDirectory deleted. Name: %s , In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tDirectory deleted. Name: %s , In: %s",
 					EventToWrite->InotifyEvent->name,TargetOfEVent->DictoryName);
 		else
-			printf("\n\tFile deleted: Name: %s, In: %s",
+			snprintf(EventMessage,sizeof(EventMessage),"\n\tFile deleted: Name: %s, In: %s",
 					EventToWrite->InotifyEvent->name,TargetOfEVent->DictoryName);
 	}
 	else{
-		printf("\n\tUndefined event: %d", EventToWrite->InotifyEvent->mask);
-		printf("\n\tName: %s", EventToWrite->InotifyEvent->name);
+		snprintf(EventMessage,sizeof(EventMessage),"\n\tUndefined event: %d, Name: %s in %s", EventToWrite->InotifyEvent->mask,
+				EventToWrite->InotifyEvent->name, TargetOfEVent->DictoryName);
 	}
-	// |  | IN_MODIFY | IN_ATTRIB
-
+	LogEvent(EventMessage);
 	return 1;
 }
 
